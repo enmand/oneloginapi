@@ -14,5 +14,5 @@ setup(
     description=("An API for interacting with OneLogin"),
     license="BSD",
     packages=['onelogin'],
-    long_description=read('README'),
+    long_description=read('README.md'),
 )
