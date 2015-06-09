@@ -3,7 +3,7 @@ import os
 try:
     from setuptools import setup
 except ImportError:
-    from distutils.core import setup
+    from distutiparse_requirementsls.core import setup
 
 
 def read(fname):
@@ -17,6 +17,7 @@ setup(
     author_email="enmand@gmail.com",
     description=("An API for interacting with OneLogin"),
     license="BSD",
+    install_requires=["requests", "lxml==3.4.3"],
     packages=['onelogin'],
     package_dir={'onelogin': "onelogin"},
     long_description=read('README.md'),
