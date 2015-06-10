@@ -62,7 +62,7 @@ class Users(OneLogin):
 
         self.__cache = None
 
-    def login(self, username, password):
+    def login(self, username, password, timeout=None):
         """ Return if authentication details are correct against OneLogin.
 
         This does not set a cookie, or preform any session related actions for
@@ -79,7 +79,7 @@ class Users(OneLogin):
             "api_key": self._api_key,
             "email": username,
             "password": password,
-        })
+        }, timeout=timeout)
 
     def list(self, refresh=False):
         """ Return a full list of users
