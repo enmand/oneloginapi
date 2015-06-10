@@ -73,9 +73,15 @@ class Users(OneLogin):
         Parameters:
             username - The username of the user
             password - The password to test
+            timeout  - Request timeout for login
 
         Returns:
             boolean
+
+        Raises:
+            onelogin.NetworkException - Raises this exception if the network
+                                        fails. This does not indicate if the
+                                        user credentials are valid or not.
         """
         try:
             authed = self._conn.get("%s/api/v1/delegated_auth" % API_HOST, params={
@@ -86,6 +92,8 @@ class Users(OneLogin):
         except (requests.exceptions.ConnectTimeout,
                 requests.exceptions.ReadTimeout):
                 raise NetworkException
+
+        return authed
 
 
     def list(self, refresh=False):
