@@ -134,8 +134,6 @@ class Users(OneLogin):
             field, search,
         ))
 
-        print repr(results)
-
         xp = map(lambda el: User.load(el.id, self._api_key), results)
         return xp
 
