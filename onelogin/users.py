@@ -3,9 +3,10 @@ import lxml.objectify
 import requests
 
 from onelogin import (OneLogin, APIObject, API_URL,
-                      API_HOST, API_VERS, NetworkException)
+                      API_HOST, NetworkException)
 from onelogin.roles import Role
 from onelogin.apps import App
+
 
 class User(APIObject):
     """ A OneLogin User object
@@ -54,6 +55,7 @@ class User(APIObject):
 
         return User(uxml, api_key)
 
+
 class Users(OneLogin):
     """ OneLogin API for Users.
 
@@ -84,11 +86,12 @@ class Users(OneLogin):
                                         user credentials are valid or not.
         """
         try:
-            reqxml = self._conn.get("%s/api/v1/delegated_auth" % API_HOST, params={
-            "api_key": self._api_key,
-            "email": username,
-            "password": password,
-        }, timeout=timeout)
+            reqxml = self._conn.get("%s/api/v1/delegated_auth" % API_HOST,
+                                    params={
+                                        "api_key": self._api_key,
+                                        "email": username,
+                                        "password": password,
+                                    }, timeout=timeout)
         except (requests.exceptions.ConnectTimeout,
                 requests.exceptions.ReadTimeout):
                 raise NetworkException
@@ -96,7 +99,6 @@ class Users(OneLogin):
         req = lxml.objectify.fromstring(reqxml.content)
 
         return req.authenticated, req.message
-
 
     def list(self, refresh=False):
         """ Return a full list of users
