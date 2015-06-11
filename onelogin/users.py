@@ -8,6 +8,19 @@ from onelogin.roles import Role
 from onelogin.apps import App
 
 
+class UserStatus(object):
+    """ Constant representation of user status.
+
+    See also: http://developers.onelogin.com/v1.0/docs/user-elements
+    """
+    DISABLED = 0
+    ACTIVE = 1
+    SUSPENDED = 2
+    LOCKED = 3
+    PASSWORD_EXPIRED = 4
+    AWAITING_PASSOWRD_RESET = 5
+
+
 class User(APIObject):
     """ A OneLogin User object
 
