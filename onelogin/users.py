@@ -23,7 +23,10 @@ class User(APIObject):
         if key == "roles":
             return map(lambda r: Role(r), f.findall("role"))
 
-        return f.text
+        if f is None:
+            return None
+        else:
+            return f.text
 
     def apps(self, embed_api_key):
         r = OneLogin.session(self._api_key)
