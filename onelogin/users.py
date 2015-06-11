@@ -37,7 +37,7 @@ class User(APIObject):
         return map(lambda a: App(a), appxml.findall("app"))
 
     @staticmethod
-    def load(username, api_key):
+    def load(user_id, api_key):
         """ Load full information about a OneLogin user
 
         Load the full User information from the OneLogin server, based on
@@ -48,7 +48,7 @@ class User(APIObject):
             api-key - The API key to use to communicate with the OneLogin server
         """
         # Use the OneLogin API
-        url = "%s/users/username/%s" % (API_URL, username)
+        url = "%s/users/%s" % (API_URL, user_id)
         ureq = OneLogin.session(api_key).get(url)
 
         uxml = lxml.etree.fromstring(ureq.content)
@@ -131,7 +131,9 @@ class Users(OneLogin):
             field, search,
         ))
 
-        xp = map(lambda el: User.load(el.username, self._api_key), results)
+        print repr(results)
+
+        xp = map(lambda el: User.load(el.id, self._api_key), results)
         return xp
 
     def find(self, search, field="email"):
