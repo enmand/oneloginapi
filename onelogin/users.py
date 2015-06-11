@@ -84,7 +84,7 @@ class Users(OneLogin):
                                         user credentials are valid or not.
         """
         try:
-            authed = self._conn.get("%s/api/v1/delegated_auth" % API_HOST, params={
+            reqxml = self._conn.get("%s/api/v1/delegated_auth" % API_HOST, params={
             "api_key": self._api_key,
             "email": username,
             "password": password,
@@ -93,7 +93,9 @@ class Users(OneLogin):
                 requests.exceptions.ReadTimeout):
                 raise NetworkException
 
-        return authed
+        req = lxml.objectify.fromstring(reqxml.content)
+
+        return req.authenticated, req.message
 
 
     def list(self, refresh=False):
