@@ -50,7 +50,10 @@ class User(APIObject):
 
         appxml = lxml.etree.fromstring(appreq.content)
 
-        return map(lambda a: App(a), appxml.findall("app"))
+        return map(
+            lambda a: App(a, self._api_key, User.load(self.id, self._api_key)),
+            appxml.findall("app"),
+        )
 
     @staticmethod
     def load(user_id, api_key):
