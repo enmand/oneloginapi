@@ -11,14 +11,14 @@ def read(fname):
 
 
 setup(
-    name="onelogin",
+    name="oneloginapi",
     version="0.1.2",
     author="Daniel Enman",
     author_email="enmand@gmail.com",
     description=("An API for interacting with OneLogin"),
     license="BSD",
     install_requires=["requests", "lxml==3.4.3"],
-    packages=['onelogin'],
-    package_dir={'onelogin': "onelogin"},
+    packages=['oneloginapi'],
+    package_dir={'oneloginapi': "oneloginapi"},
     long_description=read('README.md'),
 )

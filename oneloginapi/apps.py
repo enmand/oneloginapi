@@ -3,7 +3,7 @@ import requests
 
 from . import APIObject
 
-from onelogin import API_URL
+from oneloginapi import API_URL
 
 
 class App(APIObject):

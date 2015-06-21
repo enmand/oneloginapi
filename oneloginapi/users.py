@@ -2,10 +2,10 @@ import lxml.etree
 import lxml.objectify
 import requests
 
-from onelogin import (OneLogin, APIObject, API_URL,
-                      API_HOST, NetworkException)
-from onelogin.roles import Role
-from onelogin.apps import App
+from oneloginapi import (OneLogin, APIObject, API_URL,
+                         API_HOST, NetworkException)
+from oneloginapi.roles import Role
+from oneloginapi.apps import App
 
 
 class UserStatus(object):
