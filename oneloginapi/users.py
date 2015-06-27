@@ -1,6 +1,10 @@
+import hashlib
+
 import lxml.etree
 import lxml.objectify
 import requests
+
+from dicttoxml import dicttoxml
 
 from oneloginapi import (OneLogin, APIObject, API_URL,
                          API_HOST, NetworkException)
@@ -54,6 +58,37 @@ class User(APIObject):
             lambda a: App(a, self._api_key, User.load(self.id, self._api_key)),
             appxml.findall("app"),
         )
+
+    def set_password(self, password, confirm, sha256=True):
+        """ Update the password on OneLogin for this user """
+        r = OneLogin.session(self._api_key)
+        r.headers["Content-Type"] = "application/xml"
+
+        req = {
+            "user": {
+                "password": hashlib.sha256(password).hexdigest(),
+                "password_confirmation": hashlib.sha256(confirm).hexdigest(),
+                "password_algorithm": "salt+sha256"
+            }
+        }
+        reqxml = dicttoxml(req, root=False)
+
+        appreq = r.put("%s/users/%s/set_password.xml" % (API_URL, self.id),
+                       data=reqxml)
+
+
+        if appreq.status_code != 200:
+            respxml = lxml.etree.fromstring(appreq.content)
+            err = respxml.find("error").text
+
+            raise Exception(
+                "Could not set password for %s: %s" % (
+                    self.username,
+                    err
+                )
+            )
+
+        return True
 
     @staticmethod
     def load(user_id, api_key):
