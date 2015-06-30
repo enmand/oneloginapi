@@ -1,9 +1,10 @@
+import logging
 import requests
-
 
 API_HOST = "https://api.onelogin.com"
 API_VERS = "/api/v3"
 API_URL = "%s%s" % (API_HOST, API_VERS)
+
 
 class OneLogin(object):
     """ OneLogin base class for common API management """
@@ -18,13 +19,14 @@ class OneLogin(object):
         self._api_key = api_key
         self._conn = OneLogin.session(api_key)
 
-        return self._conn
-
     @staticmethod
     def session(_api_key):
         """ Create a new requests session for the OneLogin server, with the
         given API credentials.
         """
+        l = logging.getLogger(str(OneLogin.__class__))
+        l.info("Starting new OneLogin session with API Key: %s", _api_key)
+
         r = requests.Session()
         r.auth = (_api_key, "x")
 
@@ -36,10 +38,19 @@ class APIObject(object):
     See also http://developers.onelogin.com
     """
     def __init__(self, el):
+        self.l = logging.getLogger(str(self.__class__))
         self.__details = el
+        self._id = self._find("id")
+
+        self.l.info("Loaded %s", self._id)
 
     def __getattr__(self, key):
-        return self._find(key).text
+        f = self._find(key)
+        if f is None:
+            return None
+        self.l.debug("getattr %s (for %s): %s", key, self._id, f.text)
+
+        return f.text
 
     def _find(self, key):
         return self.__details.find(key)

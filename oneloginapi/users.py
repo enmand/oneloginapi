@@ -1,4 +1,5 @@
-import hashlib
+import logging
+from hashlib import sha256
 
 import lxml.etree
 import lxml.objectify
@@ -47,6 +48,8 @@ class User(APIObject):
 
     def apps(self, embed_api_key):
         r = OneLogin.session(self._api_key)
+        self.l.info("Sending apps request for %s", self.id)
+
         appreq = r.get("%s/client/apps/embed2" % API_HOST, params={
             "token": embed_api_key,
             "email": self.email,
@@ -101,6 +104,9 @@ class User(APIObject):
             el      - A <user> XML element, with at least the <username> field
             api-key - The API key to use to communicate with the OneLogin server
         """
+        log = logging.getLogger(str(User.__class__))
+        log.info("Fetching %s using api key %s", user_id, api_key)
+
         # Use the OneLogin API
         url = "%s/users/%s" % (API_URL, user_id)
         ureq = OneLogin.session(api_key).get(url)
@@ -117,6 +123,7 @@ class Users(OneLogin):
     """
     def __init__(self, api_key):
         super(Users, self).__init__(api_key)
+        self.l = logging.getLogger(str(self.__class__))
 
         self.__cache = None
 
@@ -177,6 +184,7 @@ class Users(OneLogin):
         Return:
             [User, ...]
         """
+        self.l.debug("filter (field %s): %s", field, search)
 
         if self.__cache is None:
             self.reload()
@@ -209,6 +217,7 @@ class Users(OneLogin):
 
     def reload(self):
         """ Reload OneLogin users from the OneLogin server """
+        self.l.debug("reloading user cache")
         url = "%s/users.xml" % API_URL
         users = self._conn.get(url)
 
