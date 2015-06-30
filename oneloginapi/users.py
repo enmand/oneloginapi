@@ -36,15 +36,10 @@ class User(APIObject):
         self._api_key = api_key
 
     def __getattr__(self, key):
-        f = self._find(key)
-
         if key == "roles":
             return map(lambda r: Role(r), f.findall("role"))
 
-        if f is None:
-            return None
-        else:
-            return f.text
+        return super(User, self).__getattr__(key)
 
     def apps(self, embed_api_key):
         r = OneLogin.session(self._api_key)
