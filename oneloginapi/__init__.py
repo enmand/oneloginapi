@@ -40,7 +40,7 @@ class APIObject(object):
     def __init__(self, el):
         self.l = logging.getLogger(str(self.__class__))
         self.__details = el
-        self._id = self._find("id")
+        self._id = self._find("id").text
 
         self.l.info("Loaded %s", self._id)
 
