@@ -37,6 +37,7 @@ class User(APIObject):
 
     def __getattr__(self, key):
         if key == "roles":
+            f = self._find(key)
             return map(lambda r: Role(r), f.findall("role"))
 
         return super(User, self).__getattr__(key)
