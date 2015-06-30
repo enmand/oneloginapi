@@ -57,32 +57,57 @@ class User(APIObject):
             appxml.findall("app"),
         )
 
-    def set_password(self, password, confirm, sha256=True):
-        """ Update the password on OneLogin for this user """
+    def set_password(self, password, confirm, cleartext=True):
+        """ Update the password on OneLogin for this user
+
+        Paremters:
+            - password:  The password to use for the user
+            - confirm:   A confirmation of the password
+            - cleartext: (optional, default=True) If we should use the
+                         Cleartext API, or by using their pre-salt+sha256
+                         API. Unfortunately, only the Cleartext API works when
+                         OneLogin is configured for use with a Directory.
+        """
         r = OneLogin.session(self._api_key)
         r.headers["Content-Type"] = "application/xml"
 
-        req = {
-            "user": {
-                "password": hashlib.sha256(password).hexdigest(),
-                "password_confirmation": hashlib.sha256(confirm).hexdigest(),
-                "password_algorithm": "salt+sha256"
+        req = {}
+        url = "%s/users/%s" % (API_URL, self.id)
+
+        if(not cleartext):
+            req = {
+                "user": {
+                    "password": sha256(password).hexdigest(),
+                    "password_confirmation": sha256(confirm).hexdigest(),
+                    "password_algorithm": "salt+sha256"
+                }
             }
-        }
+            url += "set_password"
+        else:
+            req = {
+                "user": {
+                    "password": password,
+                    "password_confirmation": confirm,
+                }
+             }
+
+        self.l.info(
+            "Sending password reset for %s to OneLogin (using cleartest: %s)",
+            self.id, cleartext,
+        )
+
+        url += ".xml"  # Both endpoints end in .xml
         reqxml = dicttoxml(req, root=False)
-
-        appreq = r.put("%s/users/%s/set_password.xml" % (API_URL, self.id),
-                       data=reqxml)
-
+        appreq = r.put(url, data=reqxml)
 
         if appreq.status_code != 200:
+            print appreq.content
             respxml = lxml.etree.fromstring(appreq.content)
-            err = respxml.find("error").text
+            err = respxml.find("message").text
 
             raise Exception(
-                "Could not set password for %s: %s" % (
-                    self.username,
-                    err
+                "Could not set password for %s (%s): %s" % (
+                    self.username, self.email, err,
                 )
             )
 
@@ -150,7 +175,10 @@ class Users(OneLogin):
                                     }, timeout=timeout)
         except (requests.exceptions.ConnectTimeout,
                 requests.exceptions.ReadTimeout):
-                raise NetworkException
+            self.l.error("Failed to authenticate user")
+            raise NetworkException
+        else:
+            self.l.info("Sent authentication request for %s", username)
 
         req = lxml.objectify.fromstring(reqxml.content)
 
