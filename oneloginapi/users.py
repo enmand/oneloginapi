@@ -12,6 +12,79 @@ from oneloginapi.roles import Role
 from oneloginapi.apps import App
 
 
+class Users(OneLogin):
+    """ OneLogin API for Users.
+
+    See also http://developers.onelogin.com/v1.0/docs/user-elements
+    """
+
+    _url = "%s/users.xml" % API_URL
+
+    def __init__(self, api_key):
+        super(Users, self).__init__(api_key)
+        self.l = logging.getLogger(str(self.__class__))
+
+        self.__cache = None
+
+    def login(self, username, password, timeout=None):
+        """ Return if authentication details are correct against OneLogin.
+
+        This does not set a cookie, or preform any session related actions for
+        any web frameworks.
+
+        Parameters:
+            username - The username of the user
+            password - The password to test
+            timeout  - Request timeout for login
+
+        Returns:
+            boolean
+
+        Raises:
+            onelogin.NetworkException - Raises this exception if the network
+                                        fails. This does not indicate if the
+                                        user credentials are valid or not.
+        """
+        try:
+            reqxml = self._conn.get("%s/api/v1/delegated_auth" % API_HOST,
+                                    params={
+                                        "api_key": self._api_key,
+                                        "email": username,
+                                        "password": password,
+                                    }, timeout=timeout)
+        except (requests.exceptions.ConnectTimeout,
+                requests.exceptions.ReadTimeout):
+            self.l.error("Failed to authenticate user")
+            raise NetworkException
+        else:
+            self.l.info("Sent authentication request for %s", username)
+
+        req = lxml.objectify.fromstring(reqxml.content)
+
+        return req.authenticated, req.message
+
+    def list(self, refresh=False):
+        """ Return a full list of Users
+
+        Parameters:
+            refresh - If we should reload fresh user information from the
+                      OneLogin server
+        """
+        print self._url
+        return self._list(api_type="user", refresh=refresh)
+
+    def filter(self, search, field="email"):
+        return self._filter(
+            api_type="user",
+            cls=User,
+            search=search,
+            field=field,
+        )
+
+    def find(self, search, field="email"):
+        return self._find(api_type="user", cls=User, search=search, field=field)
+
+
 class UserStatus(object):
     """ Constant representation of user status.
 
@@ -134,76 +207,3 @@ class User(APIObject):
         uxml = lxml.etree.fromstring(ureq.content)
 
         return User(uxml, api_key)
-
-
-class Users(OneLogin):
-    """ OneLogin API for Users.
-
-    See also http://developers.onelogin.com/v1.0/docs/user-elements
-    """
-
-    _url = "%s/users.xml" % API_URL
-
-    def __init__(self, api_key):
-        super(Users, self).__init__(api_key)
-        self.l = logging.getLogger(str(self.__class__))
-
-        self.__cache = None
-
-    def login(self, username, password, timeout=None):
-        """ Return if authentication details are correct against OneLogin.
-
-        This does not set a cookie, or preform any session related actions for
-        any web frameworks.
-
-        Parameters:
-            username - The username of the user
-            password - The password to test
-            timeout  - Request timeout for login
-
-        Returns:
-            boolean
-
-        Raises:
-            onelogin.NetworkException - Raises this exception if the network
-                                        fails. This does not indicate if the
-                                        user credentials are valid or not.
-        """
-        try:
-            reqxml = self._conn.get("%s/api/v1/delegated_auth" % API_HOST,
-                                    params={
-                                        "api_key": self._api_key,
-                                        "email": username,
-                                        "password": password,
-                                    }, timeout=timeout)
-        except (requests.exceptions.ConnectTimeout,
-                requests.exceptions.ReadTimeout):
-            self.l.error("Failed to authenticate user")
-            raise NetworkException
-        else:
-            self.l.info("Sent authentication request for %s", username)
-
-        req = lxml.objectify.fromstring(reqxml.content)
-
-        return req.authenticated, req.message
-
-    def list(self, refresh=False):
-        """ Return a full list of Users
-
-        Parameters:
-            refresh - If we should reload fresh user information from the
-                      OneLogin server
-        """
-        print self._url
-        return self._list(api_type="user", refresh=refresh)
-
-    def filter(self, search, field="email"):
-        return self._filter(
-            api_type="user",
-            cls=User,
-            search=search,
-            field=field,
-        )
-
-    def find(self, search, field="email"):
-        return self._find(api_type="user", cls=User, search=search, field=field)
