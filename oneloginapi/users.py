@@ -2,7 +2,6 @@ import logging
 from hashlib import sha256
 
 import lxml.etree
-import lxml.objectify
 import requests
 
 from dicttoxml import dicttoxml
@@ -142,6 +141,9 @@ class Users(OneLogin):
 
     See also http://developers.onelogin.com/v1.0/docs/user-elements
     """
+
+    _url = "%s/users.xml" % API_URL
+
     def __init__(self, api_key):
         super(Users, self).__init__(api_key)
         self.l = logging.getLogger(str(self.__class__))
@@ -186,63 +188,22 @@ class Users(OneLogin):
         return req.authenticated, req.message
 
     def list(self, refresh=False):
-        """ Return a full list of users
+        """ Return a full list of Users
 
         Parameters:
             refresh - If we should reload fresh user information from the
                       OneLogin server
-        Returns:
-            lxml.etree.Element
         """
-        if refresh or self.__cache is None:
-            self.reload()
-
-        return self.__cache.users
+        print self._url
+        return self._list(api_type="user", refresh=refresh)
 
     def filter(self, search, field="email"):
-        """ Filter a the users on OneLogin by some field.
-
-        Parameters:
-            search - The search term to use
-            field  - The field to search on
-        Return:
-            [User, ...]
-        """
-        self.l.debug("filter (field %s): %s", field, search)
-
-        if self.__cache is None:
-            self.reload()
-
-        results = self.__cache.xpath('//user/%s[text()="%s"]/..' % (
-            field, search,
-        ))
-
-        xp = map(lambda el: User.load(el.id, self._api_key), results)
-        return xp
+        return self._filter(
+            api_type="user",
+            cls=User,
+            search=search,
+            field=field,
+        )
 
     def find(self, search, field="email"):
-        """ Find a single user, based on your search
-
-        This function will return a single user, who is the first user to match
-        the given search criteria
-
-        Parameters:
-            search - The search term to use
-            field  - The field to search on
-        Return:
-            Users
-        """
-        users = self.filter(search, field)
-
-        if len(users) > 0:
-            return users[0]
-
-        return None
-
-    def reload(self):
-        """ Reload OneLogin users from the OneLogin server """
-        self.l.debug("reloading user cache")
-        url = "%s/users.xml" % API_URL
-        users = self._conn.get(url)
-
-        self.__cache = lxml.objectify.fromstring(users.content)
+        return self._find(api_type="user", cls=User, search=search, field=field)
