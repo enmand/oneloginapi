@@ -59,8 +59,8 @@ class OneLogin(object):
             self._reload(self._url)
 
         objlist = getattr(self._cache, api_type)
-        for u in objlist:
-            yield u
+
+        return [cls.load(o.id, self._api_key) for o in objlist]
 
 
     def _filter(self, api_type, cls, search, field):
