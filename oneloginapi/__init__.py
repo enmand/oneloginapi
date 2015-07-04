@@ -45,7 +45,7 @@ class OneLogin(object):
 
         return r
 
-    def _list(self, api_type, refresh=False):
+    def _list(self, api_type, cls, refresh=False):
         """ Return a full list of the object represented by this APIObject.
 
         Parameters:

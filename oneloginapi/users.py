@@ -70,8 +70,7 @@ class Users(OneLogin):
             refresh - If we should reload fresh user information from the
                       OneLogin server
         """
-        print self._url
-        return self._list(api_type="user", refresh=refresh)
+        return self._list(api_type="user", cls=User, refresh=refresh)
 
     def filter(self, search, field="email"):
         return self._filter(
