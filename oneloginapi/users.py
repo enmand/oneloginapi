@@ -109,7 +109,7 @@ class User(APIObject):
     def __getattr__(self, key):
         if key == "roles":
             f = self._find(key)
-            return map(lambda r: Role(r), f.findall("role"))
+            return [Role(r) for r in f.findall("role")]
 
         return super(User, self).__getattr__(key)
 
@@ -124,10 +124,9 @@ class User(APIObject):
 
         appxml = lxml.etree.fromstring(appreq.content)
 
-        return map(
-            lambda a: App(a, self._api_key, User.load(self.id, self._api_key)),
-            appxml.findall("app"),
-        )
+        user = User.load(self.id, self._api_key)
+
+        return [App(a, self._api_key, user) for a in appxml.findall("app")]
 
     def set_password(self, password, confirm, cleartext=True):
         """ Update the password on OneLogin for this user
