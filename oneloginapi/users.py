@@ -1,3 +1,4 @@
+# pylint: disable=no-member
 import logging
 from hashlib import sha256
 
