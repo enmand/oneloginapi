@@ -84,7 +84,7 @@ class OneLogin(object):
 
         xp = [cls.load(el.id, self._api_key) for el in results]
         return xp
-        
+
 
     def _find(self, api_type, cls, search, field):
         """ Find a single user, based on your search
