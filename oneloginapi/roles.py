@@ -17,5 +17,12 @@ class Roles(OneLogin):
 
     See also https://developers.onelogin.com/v1.0/docs/get-all-roles
     """
+
+    _url = "%s/api/v1/roles.xml" % API_HOST
+
     def __init__(self, api_key):
         super(Roles, self).__init__(api_key)
+
+    def list(self, refresh=False):
+        # pylint: disable=no-member
+        return self._list(api_type="role", cls=Role, refresh=refresh)
