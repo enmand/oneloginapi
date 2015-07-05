@@ -12,7 +12,7 @@ def read(fname):
 
 setup(
     name="oneloginapi",
-    version="0.1.5",
+    version="0.2.0",
     author="Daniel Enman",
     author_email="enmand@gmail.com",
     description=("An API for interacting with OneLogin"),
