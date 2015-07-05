@@ -159,7 +159,14 @@ class APIObject(object):
             self.__details = lxml.objectify.fromstring(resp.content)
 
         if self.__details is None:
-            raise APIObjectException("Could not load details")
+            if id_ and not self._url:
+                raise APIObjectException(
+                    "Could not load details: id_ given with no object _url"
+                )
+
+            raise APIObjectException(
+                "Could not load detials"
+            )
 
         self._id = self._find("id").text  # pylint: disable=no-member
         self.l.info("Loaded %s %s", name, self._id)
