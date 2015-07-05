@@ -143,9 +143,3 @@ class APIObject(object):
 
     def _find(self, key):
         return self.__details.find(key)
-
-
-class NetworkException(Exception):
-    """ Exceptions on the network when preformation operations against OneLogin
-    """
-    pass

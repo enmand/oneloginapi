@@ -8,7 +8,8 @@ import requests
 from dicttoxml import dicttoxml
 
 from oneloginapi import (OneLogin, APIObject, API_URL,
-                         API_HOST, NetworkException)
+                         API_HOST)
+from oneloginapi.exceptions import NetworkException
 from oneloginapi.roles import Role
 from oneloginapi.apps import App
 
