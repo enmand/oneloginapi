@@ -1,4 +1,4 @@
-from oneloginapi import APIObject, OneLogin
+from oneloginapi import APIObject, OneLogin, API_HOST
 
 
 class Role(APIObject):
@@ -6,7 +6,9 @@ class Role(APIObject):
 
     See also http://developers.onelogin.com/v1.0/docs/user-elements
     """
+    _url = "%s/api/v1/roles" % API_HOST
     def __init__(self, el=None, id_=None, api_key=None):
+        self._url = "%s/%s.xml" % (self._url, id_)
         super(Role, self).__init__(el=el, id_=id_, api_key=api_key)
 
 
