@@ -62,7 +62,7 @@ class OneLogin(object):
 
         objlist = getattr(self._cache, api_type)
 
-        return [cls.load(o.id, self._api_key) for o in objlist]
+        return [cls(id_=o.id, api_key=self._api_key) for o in objlist]
 
 
     def _filter(self, api_type, cls, search, field):
@@ -84,7 +84,7 @@ class OneLogin(object):
             api_type, field, search,
         ))
 
-        xp = [cls.load(el.id, self._api_key) for el in results]
+        xp = [cls(id_=el.id, api_key=self._api_key) for el in results]
         return xp
 
 

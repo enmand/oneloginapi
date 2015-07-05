@@ -104,14 +104,19 @@ class User(APIObject):
 
     See also http://developers.onelogin.com/v1.0/docs/user-elements
     """
-    def __init__(self, el, api_key):
-        super(User, self).__init__(el)
-        self._api_key = api_key
+
+    _url = "%s/users" % API_URL
+
+    def __init__(self, el=None, id_=None, api_key=None):
+        self._url = "%s/%s.xml" % (self._url, id_)
+        super(User, self).__init__(el=el, id_=id_, api_key=api_key)
 
     def __getattr__(self, key):
         if key == "roles":
             f = self._find(key)
-            return [Role(r) for r in f.findall("role")]
+            return [
+                Role(el=r, api_key=self._api_key) for r in f.findall("role")
+            ]
 
         return super(User, self).__getattr__(key)
 
@@ -126,7 +131,7 @@ class User(APIObject):
 
         appxml = lxml.etree.fromstring(appreq.content)
 
-        user = User.load(self.id, self._api_key)
+        user = User(id_=self.id, api_key=self._api_key)
 
         return [App(a, self._api_key, user) for a in appxml.findall("app")]
 
@@ -185,25 +190,3 @@ class User(APIObject):
             )
 
         return True
-
-    @staticmethod
-    def load(user_id, api_key):
-        """ Load full information about a OneLogin user
-
-        Load the full User information from the OneLogin server, based on
-        a partial user XML (with at least the username).
-
-        Parameters:
-            el      - A <user> XML element, with at least the <username> field
-            api-key - The API key to use to communicate with the OneLogin server
-        """
-        log = logging.getLogger(str(User.__class__))
-        log.info("Fetching %s using api key %s", user_id, api_key)
-
-        # Use the OneLogin API
-        url = "%s/users/%s" % (API_URL, user_id)
-        ureq = OneLogin.session(api_key).get(url)
-
-        uxml = lxml.etree.fromstring(ureq.content)
-
-        return User(uxml, api_key)

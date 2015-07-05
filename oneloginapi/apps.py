@@ -1,7 +1,7 @@
 import json
 import requests
 
-from . import APIObject
+from oneloginapi import APIObject
 
 from oneloginapi import API_URL
 
@@ -20,10 +20,9 @@ class App(APIObject):
             user    - (optional) The user this app should be associated with
 
         """
-        super(App, self).__init__(el)
+        super(App, self).__init__(el=el, api_key=api_key)
         self._user = user
 
-        self._api_key = api_key
 
     def saml_assertion(self, password, username=None):
         """ Generates a SAML assertion for this app, that can be used for SSO
