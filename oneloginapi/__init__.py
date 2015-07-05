@@ -3,6 +3,8 @@ import lxml.etree
 import lxml.objectify
 import requests
 
+from oneloginapi.exceptions import APIObjectException
+
 API_HOST = "https://api.onelogin.com"
 API_VERS = "/api/v3"
 API_URL = "%s%s" % (API_HOST, API_VERS)
@@ -125,13 +127,42 @@ class APIObject(object):
 
     See also http://developers.onelogin.com
     """
-    def __init__(self, el):
-        self.l = logging.getLogger(str(self.__class__))
-        self.__details = el
+
+    # API Key to use to interact with OneLOgin
+    _api_key   = None
+
+    # URL for this APIObject
+    _url      = None
+
+    # (XML) detail representation of this object from OneLogin
+    __details = None
+
+    def __init__(self, el=None, id_=None, api_key=None):
+        name = str(self.__class__)
+        self.l = logging.getLogger(name)
+        self._api_key = api_key
+
+        if api_key is None:
+            raise APIObjectException("You must pass an API Key to use")
+
+        if (el is None and id_ is None) or (el is not None and id_ is not None):
+            raise APIObjectException(
+                "You must pass either XML, or the ID to load"
+            )
+
+        if el is not None:
+            self.__details = el
+
+        if id_ is not None and self._url is not None:
+            resp = OneLogin.session(api_key).get(self._url)
+            # pylint: disable=no-member
+            self.__details = lxml.objectify.fromstring(resp.content)
+
+        if self.__details is None:
+            raise APIObjectException("Could not load details")
 
         self._id = self._find("id").text  # pylint: disable=no-member
-
-        self.l.info("Loaded %s", self._id)
+        self.l.info("Loaded %s %s", name, self._id)
 
     def __getattr__(self, key):
         f = self._find(key)
