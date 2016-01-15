@@ -57,10 +57,9 @@ class OneLogin(object):
         Returns:
             lxml.etree.Element
         """
-        if refresh or self._cache is None:
-            self._reload(self._url)
+        resp = self._reload(self._url)
 
-        objlist = getattr(self._cache, api_type)
+        objlist = getattr(resp, api_type)
 
         return [cls(id_=o.id, api_key=self._api_key) for o in objlist]
 
@@ -77,10 +76,9 @@ class OneLogin(object):
         """
         self.l.debug("filter (field %s): %s", field, search)
 
-        if self._cache is None:
-            self._reload()
+        resp = self._reload(self._url, {"page": "1"}, paged=True)
 
-        results = self._cache.xpath('//%s/%s[text()="%s"]/..' % (
+        results = resp.xpath('//%s/%s[text()="%s"]/..' % (
             api_type, field, search,
         ))
 
@@ -110,17 +108,26 @@ class OneLogin(object):
         return None
 
 
-    def _reload(self, url=None):
+    def _reload(self, url=None, data=None, paged=False):
         """ Reload OneLogin users from the OneLogin server """
         self.l.debug("reloading cache from %s", url)
         if url == None:
             url = self._url
 
-        resp = self._conn.get(url)
-
+        resp = self._conn.get(url, params=data)
         # pylint: disable=no-member
-        self._cache = lxml.objectify.fromstring(resp.content)
+        elem = lxml.objectify.fromstring(resp.content)
 
+        if paged:
+            if elem.tag == 'nil-classes':
+                return None
+            else:
+                data["page"] = int(data["page"]) + 1
+                next_page = self._reload(url, data, paged)
+                if next_page is not None:
+                    elem.extend(next_page)
+
+        return elem
 
 class APIObject(object):
     """ A OneLogin API object
