@@ -179,14 +179,16 @@ class User(APIObject):
         appreq = r.put(url, data=reqxml)
 
         if appreq.status_code != 200:
-            print appreq.content
             respxml = lxml.etree.fromstring(appreq.content)
             err = respxml.find("message").text
 
-            raise Exception(
+            raise UserPasswordException(
                 "Could not set password for %s (%s): %s" % (
                     self.username, self.email, err,
                 )
             )
 
         return True
+
+class UserPasswordException(Exception):
+    pass
