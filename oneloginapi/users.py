@@ -182,11 +182,7 @@ class User(APIObject):
             respxml = lxml.etree.fromstring(appreq.content)
             err = respxml.find("message").text
 
-            raise UserPasswordException(
-                "Could not set password for %s (%s): %s" % (
-                    self.username, self.email, err,
-                )
-            )
+            raise UserPasswordException(err)
 
         return True
 
