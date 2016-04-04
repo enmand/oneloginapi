@@ -175,7 +175,11 @@ class APIObject(object):
                 "Could not load detials"
             )
 
-        self._id = self._find("id").text  # pylint: disable=no-member
+        self._id = self._find("id")
+        if self._id is not None:
+            self._id = self._id.text  # pylint: disable=no-member
+        else:
+            raise APIObjectException("Invalid API Object ID given: %s", id_)
         self.l.info("Loaded %s %s", name, self._id)
 
     def __getattr__(self, key):
